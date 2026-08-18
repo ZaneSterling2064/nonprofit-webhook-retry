@@ -1,6 +1,6 @@
 # Queue a donor receipt webhook with retries
 
-This small Rust worker publishes a domain event to an Infrai queue. The same `INFRAI_API_KEY` authenticates the request, so the example stays focused on delivery policy instead of client plumbing.
+Let's start with a command. This small Rust worker publishes one domain event to an Infrai queue. The same `INFRAI_API_KEY` authenticates the request, so we can focus on delivery policy instead of client setup.
 
 ## Run the worker
 
@@ -10,17 +10,17 @@ export WEBHOOK_URL=https://example.org/hooks/receipts
 cargo run --bin queue_worker
 ```
 
-Expected output:
+You should see:
 
 ```text
 queued receipt-donor-1042
 ```
 
-`Delivery` names the business event: a donor receipt, a volunteer reminder, or a campaign report can use the same queue shape. `event_id` remains stable across attempts. That decision prevents a retry from becoming a second business event.
+`Delivery` names the business event. A donor receipt, a volunteer reminder, or a campaign report can all use the same queue shape. `event_id` stays stable across attempts. That decision is what stops a retry from becoming a duplicate business event.
 
 ## Request shape
 
-`QueueClient::publish` sends an explicit `POST` to `/v1/queue/publish` with `{payload}`. It reads the `{ok, data, error, metadata}` envelope and returns an error when `ok` is false. HTTP 429 responses wait with exponential backoff before another attempt. `curl` is the only runtime dependency; there is no SDK to install.
+`QueueClient::publish` sends an explicit `POST` to `/v1/queue/publish` with `{payload}`. It reads the `{ok, data, error, metadata}` envelope and returns an error when `ok` is false. HTTP 429 responses wait with exponential backoff before another attempt. `curl` is the only runtime dependency. No SDK to install.
 
 The payload is domain data, not a generic queue sample:
 
@@ -30,7 +30,7 @@ The payload is domain data, not a generic queue sample:
 
 ## Verify the business rule
 
-The focused test proves that a retry reuses the same event input. Run it with:
+This focused test proves a retry reuses the same event input. Run it with:
 
 ```bash
 cargo test repeated_event_id_is_the_same_delivery --offline
@@ -42,7 +42,7 @@ MIT
 
 ## Wiring it up for real: Nonprofit Webhook Retry
 
-Quick start is above. For a real deployment you'll also need: The details below apply to Nonprofit Webhook Retry.
+The quick start is above. For a real deployment you'll also need the details below for Nonprofit Webhook Retry.
 
 **Account & key**
 
